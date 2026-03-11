@@ -1,0 +1,91 @@
+description: 'Memory Wallet — search quality evaluation'
+
+prompts:
+  - '{{query}}'
+
+providers:
+  - file://test/providers/search-provider.ts
+
+tests:
+  # Semantic search: queries find relevant notes even without exact keyword matches
+  - description: 'Semantic: "pricing discussion" finds pricing meeting note'
+    vars:
+      query: 'pricing discussion'
+    assert:
+      - type: icontains
+        value: 'Sarah'
+      - type: icontains
+        value: 'pricing'
+
+  - description: 'Semantic: "bread recipe" finds sourdough note'
+    vars:
+      query: 'bread recipe'
+    assert:
+      - type: icontains
+        value: 'sourdough'
+
+  - description: 'Semantic: "fitness routine" finds workout note'
+    vars:
+      query: 'fitness routine'
+    assert:
+      - type: icontains
+        value: 'Workout'
+
+  - description: 'Semantic: "design meeting" finds design 1:1 note'
+    vars:
+      query: 'design meeting notes'
+    assert:
+      - type: icontains
+        value: 'design'
+      - type: icontains
+        value: 'Alex'
+
+  - description: 'Semantic: "trip planning Asia" finds Japan note'
+    vars:
+      query: 'trip planning Asia'
+    assert:
+      - type: icontains
+        value: 'Japan'
+
+  - description: 'Semantic: "behavioral economics" finds Kahneman book notes'
+    vars:
+      query: 'behavioral economics'
+    assert:
+      - type: icontains
+        value: 'Kahneman'
+
+  - description: 'Semantic: "kitchen remodel" finds home renovation note'
+    vars:
+      query: 'kitchen remodel'
+    assert:
+      - type: icontains
+        value: 'renovation'
+
+  # Keyword search: exact matches
+  - description: 'Keyword: exact match for "sourdough"'
+    vars:
+      query: 'sourdough'
+    assert:
+      - type: icontains
+        value: 'sourdough'
+      - type: icontains
+        value: 'bread'
+
+  # Hybrid ranking: results with both semantic + keyword relevance rank higher
+  - description: 'Hybrid: pricing strategy query ranks pricing note first'
+    vars:
+      query: 'pricing strategy enterprise'
+    assert:
+      - type: javascript
+        value: |
+          const lines = output.split('\n');
+          const firstResult = lines[0] || '';
+          return firstResult.toLowerCase().includes('pricing');
+
+  # Latency
+  - description: 'Latency: search responds within 2 seconds'
+    vars:
+      query: 'project planning'
+    assert:
+      - type: latency
+        threshold: 2000

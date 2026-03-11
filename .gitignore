@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.gguf
+data/
+.DS_Store
+todo.md
+*.swp
+*.swo
+*~
+.private/

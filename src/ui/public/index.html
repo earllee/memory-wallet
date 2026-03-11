@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Wallet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.5;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header h1 span { font-size: 1.8rem; }
+
+    header p {
+      color: #86868b;
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card h2 .icon { font-size: 1.2rem; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 0.75rem;
+      background: #f5f5f7;
+      border-radius: 8px;
+    }
+
+    .stat .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0071e3;
+    }
+
+    .stat .label {
+      font-size: 0.75rem;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.25rem;
+    }
+
+    .status-dot.green { background: #34c759; }
+    .status-dot.amber { background: #ff9f0a; }
+    .status-dot.red { background: #ff3b30; }
+
+    button {
+      background: #0071e3;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #0077ed; }
+    button:disabled { background: #86868b; cursor: not-allowed; }
+    button.secondary { background: #e8e8ed; color: #1d1d1f; }
+    button.secondary:hover { background: #d2d2d7; }
+
+    .collapsible-header {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .collapsible-header .arrow {
+      transition: transform 0.2s;
+      font-size: 0.8rem;
+      color: #86868b;
+    }
+
+    .collapsible-header .arrow.open { transform: rotate(90deg); }
+
+    .collapsible-body {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    .collapsible-body.open { display: block; }
+
+    .steps {
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .steps li {
+      counter-increment: step;
+      padding: 0.5rem 0;
+      padding-left: 2rem;
+      position: relative;
+      font-size: 0.9rem;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: #0071e3;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    pre {
+      background: #1d1d1f;
+      color: #f5f5f7;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      margin: 0.75rem 0;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: #424245;
+      color: #f5f5f7;
+      border: none;
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover { background: #636366; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 0.5rem;
+      border-bottom: 2px solid #e8e8ed;
+      font-weight: 600;
+      color: #86868b;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 0.5rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    tr:hover td { background: #f9f9fb; }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #86868b;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: #86868b;
+      margin-top: 0.25rem;
+    }
+
+    .status-bar {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e8e8ed;
+      font-size: 0.85rem;
+      color: #86868b;
+      text-align: center;
+    }
+
+    th { cursor: pointer; user-select: none; white-space: nowrap; }
+    th:hover { color: #1d1d1f; }
+    .sort-arrow { font-size: 0.65rem; margin-left: 0.25rem; }
+
+    .show-more {
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+    .show-more button {
+      background: none;
+      color: #0071e3;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .show-more button:hover { background: #f0f0f5; }
+
+    .toast-container {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .toast {
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.25s ease;
+      max-width: 320px;
+    }
+    .toast.success { background: #34c759; }
+    .toast.error { background: #ff3b30; }
+    .toast.fadeOut { animation: fadeOut 0.3s ease forwards; }
+
+    @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateX(30px); } }
+
+    .callout {
+      background: #e8f4fd;
+      border-left: 4px solid #0071e3;
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .callout code {
+      background: #d1e8f8;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span>🧠</span> Memory Wallet</h1>
+    <p>Your personal memory layer for Claude</p>
+  </header>
+
+  <div class="toast-container" id="toasts"></div>
+
+  <!-- MCP Setup -->
+  <div class="card">
+    <div class="collapsible-header" onclick="toggle('mcp')">
+      <h2><span class="icon">🔌</span> Step 1: Claude Desktop MCP Setup</h2>
+      <span class="arrow" id="mcp-arrow">▶</span>
+    </div>
+    <div class="collapsible-body" id="mcp-body">
+      <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">Add this to your Claude Desktop config to connect Memory Wallet:</p>
+      <ol class="steps">
+        <li>Open <strong>Claude Desktop</strong></li>
+        <li>Go to <strong>Settings → Developer</strong></li>
+        <li>Click <strong>Edit Config</strong> to open <code>claude_desktop_config.json</code></li>
+        <li>Add the following to the <code>mcpServers</code> section:</li>
+      </ol>
+      <div style="position: relative;">
+        <pre id="mcp-config">Loading...</pre>
+        <button class="copy-btn" onclick="copyMcpConfig()">Copy</button>
+      </div>
+      <p class="hint">The config includes your Anthropic API key as an environment variable for the suggest feature. Replace <code>sk-ant-...</code> with your actual key from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.</p>
+      <ol class="steps" start="5">
+        <li>Save the file and <strong>restart Claude Desktop</strong></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Full Disk Access -->
+  <div class="card">
+    <div class="collapsible-header" onclick="toggle('fda')">
+      <h2><span class="icon">🔐</span> Step 2: Full Disk Access Setup</h2>
+      <span class="arrow" id="fda-arrow">▶</span>
+    </div>
+    <div class="collapsible-body" id="fda-body">
+      <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">Memory Wallet needs Full Disk Access to read your Apple Notes database. macOS silently returns empty data without it.</p>
+
+      <p style="font-size: 0.9rem; margin-bottom: 0.25rem;">Grant access to your <strong>Node.js binary</strong>:</p>
+      <ol class="steps">
+        <li>Open <strong>System Settings → Privacy & Security → Full Disk Access</strong></li>
+        <li>Click <strong>+</strong>, then press <kbd style="border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 0.85em;">Cmd+Shift+G</kbd></li>
+        <li>Paste this path and click <strong>Open</strong>:
+          <pre id="fda-node-path" style="margin: 0.5rem 0; cursor: pointer; position: relative;" onclick="copyFdaPath()" title="Click to copy">Loading...</pre>
+        </li>
+        <li>Toggle it <strong>ON</strong> and restart Claude Desktop</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- User Preferences -->
+  <div class="card">
+    <div class="collapsible-header" onclick="toggle('prefs')">
+      <h2><span class="icon">💬</span> Step 3: Claude Desktop User Preferences</h2>
+      <span class="arrow" id="prefs-arrow">▶</span>
+    </div>
+    <div class="collapsible-body" id="prefs-body">
+      <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">Add this to your Claude Desktop personal preferences so Claude proactively searches your notes:</p>
+      <ol class="steps">
+        <li>Open <strong>Claude Desktop</strong></li>
+        <li>Go to <strong>Settings → General</strong></li>
+        <li>Find <strong>"What personal preferences should Claude consider..."</strong> and add the following:</li>
+      </ol>
+      <div style="position: relative;">
+        <pre id="prefs-text" style="white-space: pre-wrap; word-wrap: break-word;">I have a personal knowledge base connected via the "memory-wallet" MCP server. It contains my notes, preferences, and context about my life and work.
+
+ALWAYS search using it before responding. It helps you give more personalized and relevant responses.
+
+DON'T mention that you're checking it. If memory-wallet is not available, DON'T mention it.</pre>
+        <button class="copy-btn" onclick="copyPrefsText()">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Using -->
+  <div class="card">
+    <h2><span class="icon">🚀</span> Step 4: Start Using Memory Wallet</h2>
+    <div class="callout">
+      Open <strong>Claude Desktop</strong> and say: <code>Refresh my memory-wallet</code><br>
+      This will import your Apple Notes and generate embeddings. The first run downloads the embedding model (~130MB).
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="card" id="status-card">
+    <h2><span class="icon">📊</span> Status</h2>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="value" id="note-count">-</div>
+        <div class="label">Notes</div>
+      </div>
+      <div class="stat">
+        <div class="value" id="chunk-count">-</div>
+        <div class="label">Chunks</div>
+      </div>
+      <div class="stat">
+        <div class="value" id="last-sync">-</div>
+        <div class="label">Last Sync</div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Notes Table -->
+  <div class="card">
+    <h2><span class="icon">📝</span> Imported Notes</h2>
+    <div id="notes-container">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortNotes('title')">Title <span class="sort-arrow" id="sort-title"></span></th>
+            <th onclick="sortNotes('folder')">Folder <span class="sort-arrow" id="sort-folder"></span></th>
+            <th onclick="sortNotes('modified_at')">Modified <span class="sort-arrow" id="sort-modified_at"></span></th>
+            <th onclick="sortNotes('chunk_count')">Chunks <span class="sort-arrow" id="sort-chunk_count"></span></th>
+          </tr>
+        </thead>
+        <tbody id="notes-body">
+          <tr><td colspan="4" class="empty-state">Loading...</td></tr>
+        </tbody>
+      </table>
+      <div class="show-more" id="show-more-row" style="display:none">
+        <button onclick="showMore()">Show more</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---- State ----
+    var allNotes = [];
+    var visibleCount = 50;
+    var sortKey = 'modified_at';
+    var sortDir = -1;
+
+    // ---- Helpers ----
+    function toggle(id) {
+      var body = document.getElementById(id + '-body');
+      var arrow = document.getElementById(id + '-arrow');
+      body.classList.toggle('open');
+      arrow.classList.toggle('open');
+    }
+
+    function esc(s) {
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function toast(message, type) {
+      type = type || 'success';
+      var el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.textContent = message;
+      document.getElementById('toasts').appendChild(el);
+      setTimeout(function() { el.classList.add('fadeOut'); }, 3000);
+      setTimeout(function() { el.remove(); }, 3300);
+    }
+
+    function formatRelative(ts) {
+      var d = new Date(ts * 1000);
+      var now = new Date();
+      var diff = now.getTime() - d.getTime();
+      if (diff < 60000) return 'Just now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
+    // ---- Status ----
+    async function loadStatus() {
+      try {
+        var res = await fetch('/api/status');
+        var data = await res.json();
+        document.getElementById('note-count').textContent = data.noteCount;
+        document.getElementById('chunk-count').textContent = data.chunkCount;
+
+        if (data.lastSyncTime) {
+          document.getElementById('last-sync').textContent = formatRelative(parseInt(data.lastSyncTime));
+        } else {
+          document.getElementById('last-sync').textContent = 'Never';
+        }
+
+        var dot = document.getElementById('status-dot');
+        var statusText = document.getElementById('status-text');
+        if (data.noteCount > 0) {
+          dot.className = 'status-dot green';
+          statusText.textContent = 'Ready';
+        } else {
+          dot.className = 'status-dot amber';
+          statusText.textContent = 'No notes imported yet';
+        }
+      } catch (e) {
+        document.getElementById('note-count').textContent = '?';
+        document.getElementById('status-text').textContent = 'Unable to connect';
+      }
+    }
+
+    // ---- Config ----
+    async function loadConfig() {
+      try {
+        var res = await fetch('/api/config');
+        var data = await res.json();
+        if (data.nodePath) {
+          document.getElementById('fda-node-path').textContent = data.nodePath;
+        }
+        if (data.projectPath) {
+          var config = {
+            mcpServers: {
+              'memory-wallet': {
+                command: data.nodePath || 'node',
+                args: [data.projectPath + '/node_modules/.bin/tsx', data.projectPath + '/src/mcp-server.ts'],
+                env: {
+                  ANTHROPIC_API_KEY: 'sk-ant-...'
+                }
+              }
+            }
+          };
+          document.getElementById('mcp-config').textContent = JSON.stringify(config, null, 2);
+        }
+      } catch (e) {}
+    }
+
+    // ---- Notes table ----
+    async function loadNotes() {
+      try {
+        var res = await fetch('/api/notes');
+        allNotes = await res.json();
+        visibleCount = 50;
+        renderNotes();
+      } catch (e) {
+        document.getElementById('notes-body').innerHTML = '<tr><td colspan="4" class="empty-state">Failed to load notes</td></tr>';
+      }
+    }
+
+    function renderNotes() {
+      var tbody = document.getElementById('notes-body');
+      if (!allNotes.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No notes imported yet. Say "Refresh my memory-wallet" in Claude Desktop.</td></tr>';
+        document.getElementById('show-more-row').style.display = 'none';
+        return;
+      }
+
+      var sorted = allNotes.slice().sort(function(a, b) {
+        var av = a[sortKey] || '';
+        var bv = b[sortKey] || '';
+        if (typeof av === 'number') return (av - bv) * sortDir;
+        return String(av).localeCompare(String(bv)) * sortDir;
+      });
+
+      var visible = sorted.slice(0, visibleCount);
+      tbody.innerHTML = visible.map(function(n) {
+        var date = n.modified_at ? formatRelative(n.modified_at) : '-';
+        return '<tr><td>' + esc(n.title || 'Untitled') + '</td><td>' + esc(n.folder || '-') + '</td><td>' + date + '</td><td>' + n.chunk_count + '</td></tr>';
+      }).join('');
+
+      document.getElementById('show-more-row').style.display = allNotes.length > visibleCount ? '' : 'none';
+
+      // Update sort arrows
+      document.querySelectorAll('.sort-arrow').forEach(function(el) { el.textContent = ''; });
+      var arrow = document.getElementById('sort-' + sortKey);
+      if (arrow) arrow.textContent = sortDir === 1 ? '\u25B2' : '\u25BC';
+    }
+
+    function sortNotes(key) {
+      if (sortKey === key) {
+        sortDir *= -1;
+      } else {
+        sortKey = key;
+        sortDir = (key === 'modified_at' || key === 'chunk_count') ? -1 : 1;
+      }
+      renderNotes();
+    }
+
+    function showMore() {
+      visibleCount += 50;
+      renderNotes();
+    }
+
+    // ---- Copy helpers ----
+    function copyPrefsText() {
+      var text = document.getElementById('prefs-text').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        toast('Preferences text copied to clipboard!');
+      });
+    }
+
+    function copyFdaPath() {
+      var text = document.getElementById('fda-node-path').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        toast('Node path copied to clipboard!');
+      });
+    }
+
+    function copyMcpConfig() {
+      var text = document.getElementById('mcp-config').textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        toast('Copied to clipboard!');
+      });
+    }
+
+    // ---- Init ----
+    loadStatus();
+    loadConfig();
+    loadNotes();
+    setInterval(loadStatus, 30000);
+  </script>
+</body>
+</html>
