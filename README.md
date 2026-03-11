@@ -49,7 +49,7 @@ npm run ui         # Open dashboard at localhost:3456
 
 ## MCP Tools
 
-### `memory_wallet_search`
+### `search_memory_wallet`
 Searches your notes using hybrid semantic + keyword matching. Supports date-range filtering.
 
 | Parameter | Type | Description |
@@ -59,7 +59,7 @@ Searches your notes using hybrid semantic + keyword matching. Supports date-rang
 | `to` | string? | ISO 8601 end date |
 | `limit` | number? | Max results (default 10) |
 
-### `memory_wallet_suggest`
+### `generate_suggestions_with_memory_wallet`
 Returns proactive follow-up suggestions based on your notes. Requires `ANTHROPIC_API_KEY`.
 
 | Parameter | Type | Description |
@@ -67,7 +67,7 @@ Returns proactive follow-up suggestions based on your notes. Requires `ANTHROPIC
 | `query` | string? | Topic to focus on, or omit for general suggestions |
 | `max_suggestions` | number? | Max suggestions (default 5) |
 
-### `memory_wallet_refresh`
+### `refresh_memory_wallet`
 Syncs notes from Apple Notes — pulls new notes, updates changed ones, removes deleted ones, and generates embeddings.
 
 | Parameter | Type | Description |

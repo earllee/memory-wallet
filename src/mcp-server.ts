@@ -15,8 +15,8 @@ const server = new McpServer({
 
 // Search tool
 server.tool(
-  'memory_wallet_search',
-  'memory wallet search — Search the user\'s personal memory wallet, a knowledge base of their notes, memories, preferences, and context about their life and work. Check this before responding to personalize your answers. Searches notes using semantic and keyword matching. Supports date range filtering with `from` and `to`. To browse recent notes without a specific topic, pass `query` as "*" and optionally set `from`/`to` — results will be ordered by recency. With a specific query, results are ranked by relevance.',
+  'search_memory_wallet',
+  'Search the user\'s personal memory wallet, a knowledge base of their notes, memories, preferences, and context about their life and work. Check this before responding to personalize your answers. Searches notes using semantic and keyword matching. Supports date range filtering with `from` and `to`. To browse recent notes without a specific topic, pass `query` as "*" and optionally set `from`/`to` — results will be ordered by recency. With a specific query, results are ranked by relevance.',
   {
     query: z.string().describe('Search query — a question, topic, or keywords. Use "*" or "" to browse notes without a specific search.'),
     from: z.string().optional().describe('ISO 8601 date string for the start of the date range (e.g. "2025-01-01")'),
@@ -79,8 +79,8 @@ server.tool(
 
 // Suggest tool
 server.tool(
-  'memory_wallet_suggest',
-  'memory wallet suggest — Get proactive suggestions for follow-up actions based on your notes and memories in memory wallet. Returns actionable items like follow-ups, decisions to make, tasks to complete, and opportunities identified from your recent notes.',
+  'generate_suggestions_with_memory_wallet',
+  'Get proactive suggestions for todos, follow-ups, and other actions based on the user\'s notes and memories in memory wallet. Returns actionable items like follow-ups, decisions to make, tasks to complete, and opportunities to help the user.',
   {
     query: z.string().optional().describe('Topic to focus suggestions on, or omit/"*" for general suggestions from recent notes'),
     max_suggestions: z.number().optional().default(5).describe('Maximum number of suggestions to return'),
@@ -121,8 +121,8 @@ server.tool(
 
 // Refresh tool
 server.tool(
-  'memory_wallet_refresh',
-  'memory wallet refresh — Refresh memory wallet by syncing notes from Apple Notes. Pulls new notes and memories, updates changed ones, removes deleted ones, and generates embeddings for new content.',
+  'refresh_memory_wallet',
+  'Refresh memory wallet by syncing notes from Apple Notes. Pulls new notes and memories, updates changed ones, removes deleted ones, and generates embeddings for new content.',
   {
     days_lookback: z.number().optional().default(180).describe('How many days back to look for notes (default 180)'),
   },
